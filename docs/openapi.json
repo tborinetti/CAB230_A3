@@ -1160,16 +1160,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MissingAuthHeader"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized. Click on 'Schema' below to see the possible error responses.",
-            "content": {
-              "application/json": {
-                "schema": {
                   "type": "object",
                   "properties": {
                     "error": {
@@ -1185,13 +1175,45 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized. Click on 'Schema' below to see the possible error responses.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref" : "#/components/schemas/TokenExpired"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. Shows when JWTs are valid and trying to edit another user's profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request body incomplete: firstName, lastName, dob and address are required."
+                    }
+                  }
+                  }
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not Found. Click on 'Schema' below to see the possible error responses.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserNotFound"
-                }
+                
               }
             }
           }
@@ -1285,4 +1307,3 @@
       }
     }
   }
-}
