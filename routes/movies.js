@@ -19,20 +19,44 @@ router.get('/search', function (req, res, next) {
 
 	if (searchParams['year'] !== undefined) {
 		try {
-			const parse = parseInt(searchParams['year']);
-
-			if (!isNaN(parse) && parse > 999 && parse < 10000) {
+			const regex = /[0-9]{4}/
+			const matches = searchParams['year'].match(regex);
+			if (matches[0] && matches[0] === searchParams['year']) {
+				const parse = parseInt(searchParams['year']);
 				query = query.where('year', '=', parse);
 			} else {
-				throw "Invalid year format. Format must be a 4-digit year.";
+				return res.status(400).json({
+					error: true,
+					message: "Invalid year format. Format must be yyyy."
+				});
 			}
-
 		} catch (e) {
 			return res.status(400).json({
 				error: true,
-				message: e
+				message: e.message
 			});
 		}
+	}
+
+	if (searchParams['page'] !== undefined) {
+		const parse = parseInt(searchParams['page']);
+		try {
+			if (!isNaN(parse)) {
+				searchParams['page'] = parse;
+			} else {
+				return res.status(400).json({
+					error: true,
+					message: "Invalid page format. page must be a number."
+				});
+			}
+		} catch (e) {
+			return res.status(400).json({
+				error: true,
+				message: e.message
+			});
+		}
+	} else {
+		searchParams['page'] = 1;
 	}
 
 	try {
@@ -42,18 +66,21 @@ router.get('/search', function (req, res, next) {
 
 		paginationQuery.count('*')
 			.then((row) => {
+				console.log(row);
 				const total = Object.values(row[0])[0];
 				paginationData['total'] = total;
 				let lastPage = Math.ceil(total / 100);
-				(lastPage === 0) ? lastPage = 1 : lastPage;
+				// (lastPage === 0) ? lastPage = 1 : lastPage;
 				(searchParams['page'] === 0) ? searchParams['page'] = 1 : searchParams['page'];
 				paginationData['lastPage'] = lastPage;
 				paginationData['perPage'] = 100;
+				paginationData['prevPage'] = null;
+				paginationData['nextPage'] = null;
 				paginationData['currentPage'] = searchParams['page'];
 				paginationData['from'] = (searchParams['page'] - 1) * 100;
 
 				let offset = paginationData['from'];
-				if (paginationData['currentPage'] == paginationData['lastPage']) {
+				if (paginationData['currentPage'] >= paginationData['lastPage']) {
 					paginationData['to'] = total;
 				}
 				else if ((total / offset) < 1) {
@@ -62,27 +89,8 @@ router.get('/search', function (req, res, next) {
 					paginationData['to'] = paginationData['from'] + 100;
 				}
 			})
-
 			.then(() => {
-				if (searchParams['page'] !== undefined) {
-					const parse = parseInt(searchParams['page']);
-					try {
-						if (!isNaN(parse)) {
-							searchParams['page'] = parse;
-							query = query.limit(100).offset((parse * 100) - 100);
-						} else {
-							throw "Invalid page format. page must be a number."
-						}
-					} catch (e) {
-						return res.status(400).json({
-							error: true,
-							message: e
-						});
-						return;
-					}
-				} else {
-					searchParams['page'] = 1;
-				}
+				query = query.limit(100).offset((searchParams['page'] * 100) - 100);	
 				query.select('*')
 					.then((rows) => {
 						res.json({

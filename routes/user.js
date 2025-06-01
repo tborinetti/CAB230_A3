@@ -31,7 +31,7 @@ router.post('/login', function (req, res) {
 	queryUsers
 		.then(users => {
 			if (users.length === 0) {
-				throw new Error("User does not exist");
+				throw new Error("Incorrect email or password");
 			}
 
 			const user = users[0];
@@ -39,7 +39,7 @@ router.post('/login', function (req, res) {
 		})
 		.then(match => {
 			if (!match) {
-				throw new Error("Passwords do not match");
+				throw new Error("Incorrect email or password");
 			}
 			const bearer_expires_in = bearerExpire ? parseInt(bearerExpire): 60 * 10;
 			const bearer_exp = Math.floor(Date.now() / 1000) + bearer_expires_in;
@@ -71,7 +71,7 @@ router.post('/login', function (req, res) {
 
 		})
 		.catch(e => {
-			res.status(500).json({ success: false, message: e.message });
+			res.status(401).json({ success: false, message: e.message });
 			return;
 		});
 
@@ -181,6 +181,8 @@ router.put('/:email/profile', authorization, function(req, res){
 		const parsedDate = new Date(dob);
 		if (isNaN(parsedDate) || dob !== parsedDate.toISOString().split('T')[0]){
 			throw new Error("Invalid input: dob must be a real date in format YYYY-MM-DD.")
+		} else if (new Date() < parsedDate) {
+			throw new Error("Invalid input: dob must be a date in the past.")
 		}
 	} catch (e) {
 		res.status(400).json({
@@ -263,7 +265,7 @@ router.post('/refresh', function(req, res) {
         if (e.name === "TokenExpiredError") {
             res.status(401).json({ error: true, message: "JWT token has expired" });
         } else {
-            res.status(401).json({ error: true, message: e.message });
+            res.status(401).json({ error: true, message: "Invalid JWT token" });
         }
         return;
     }
@@ -318,26 +320,25 @@ router.post('/logout', function(req, res) {
 				res.status(401).json({ error: true, message: "JWT token has expired" });
 				return;
 			} 
-		});
-
-		req.db.from("users").update("refresh", null).where('email', '=', email)
-		.then(() => {
-			res.status(401).json({ error: false, message: "Token successfully invalidated" });
-			return;
-		})
-		.catch((e) => {
-			throw new Error(e); 
-		})
+		}).then(() => {
+			req.db.from("users").update("refresh", null).where('email', '=', email)
+			.then(() => {
+				res.status(200).json({ error: false, message: "Token successfully invalidated" });
+				return;
+			})
+			.catch((e) => {
+				throw new Error(e); 
+			})
+		});	
 		
     } catch (e) {
         if (e.name === "TokenExpiredError") {
             res.status(401).json({ error: true, message: "JWT token has expired" });
 			return;
         } else {
-            res.status(401).json({ error: true, message: e.message });
+            res.status(401).json({ error: true, message: "Invalid JWT token" });
 			return;
         }
-        return;
     }
 });
 

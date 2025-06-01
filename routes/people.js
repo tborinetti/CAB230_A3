@@ -14,7 +14,11 @@ router.get("/:id", authorization, function (req, res) {
     req.db.from('names').select('*').where('nconst', '=', req.params.id)
         .then((rows) => {
             if (rows.length < 1) {
-                throw new Error("User does not exist");
+                return res.status(404).json({
+                    "error": true, 
+                    "message": "User does not exist."
+                });
+                
             }
             const row = rows[0];
             const jsonRoles = [];
@@ -61,7 +65,7 @@ router.get("/:id", authorization, function (req, res) {
         })
         .catch((err) => {
             console.log(err);
-            res.json({ "Error": true, "Message": "Error executing MySQL query" })
+            res.status(400).json({ "error": true, "message": err.message })
             return;
         })
 });

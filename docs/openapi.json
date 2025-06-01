@@ -27,6 +27,19 @@
           }
         }
       },
+      "UserNotFound": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "boolean",
+            "example": "true"
+          },
+          "message": {
+            "type": "string",
+            "example": "User not found"
+          }
+        }
+      },
       "MissingAuthHeader": {
         "type": "object",
         "properties": {
@@ -946,6 +959,238 @@
                 "schema": {
                   "type": "string",
                   "example": "Too many requests, please try again later."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/user/{email}/profile": {
+      "get": {
+        "description": "Returns a user’s profile information as a JSON object",
+        "tags": ["Profile"],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "description": "Desired user profile's email",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          " 200": {
+            "description": "User profile located - no auth",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bearerToken": {
+                      "type": "object",
+                      "properties": {
+                        "email": {
+                          "type": "string",
+                          "example": "mike@gmail.com"
+                        },
+                        "firstName": {
+                          "type": "string",
+                          "example": "Michael"
+                        },
+                        "lastName": {
+                          "type": "string",
+                          "example": "Jordan"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "200 ": {
+            "description": "User profile located - auth",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bearerToken": {
+                      "type": "object",
+                      "properties": {
+                        "email": {
+                          "type": "string",
+                          "example": "mike@gmail.com"
+                        },
+                        "firstName": {
+                          "type": "string",
+                          "example": "Michael"
+                        },
+                        "lastName": {
+                          "type": "string",
+                          "example": "Jordan"
+                        },
+                        "dob": {
+                          "type": "string",
+                          "example": "1963-02-17"
+                        },
+                        "address": {
+                          "type": "string",
+                          "example": "123 Fake Street, Springfield"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          " 401": {
+            "description": "Unauthorized. Click on 'Schema' below to see the possible error responses.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenExpired"
+                }
+              }
+            }
+          },
+          " 404": {
+            "description": "Not Found. Click on 'Schema' below to see the possible error responses.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserNotFound"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{email}/profile ": {
+      "put": {
+        "description": "Inserts data into the logged in user’s profile",
+        "tags": ["Profile"],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "description": "Desired user profile's email",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+          
+        ],
+        "requestBody": {
+          "description": "The credentials of the user to log in.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "example": "Michael"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "example": "Jordan"
+                  },
+                  "dob": {
+                    "type": "string",
+                    "example": "1963-02-17"
+                  },
+                  "address": {
+                    "type": "number",
+                    "example": "123 Fake Street, Springfield"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully updated data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bearerToken": {
+                      "type": "object",
+                      "properties": {
+                        "email": {
+                          "type": "string",
+                          "example": "mike@gmail.com"
+                        },
+                        "firstName": {
+                          "type": "string",
+                          "example": "Michael"
+                        },
+                        "lastName": {
+                          "type": "string",
+                          "example": "Jordan"
+                        },
+                        "dob": {
+                          "type": "string",
+                          "example": "1963-02-17"
+                        },
+                        "address": {
+                          "type": "number",
+                          "example": "123 Fake Street, Springfield"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request, request body incomplete.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MissingAuthHeader"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Click on 'Schema' below to see the possible error responses.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request body incomplete: firstName, lastName, dob and address are required."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. Click on 'Schema' below to see the possible error responses.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserNotFound"
                 }
               }
             }
