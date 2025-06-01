@@ -1180,12 +1180,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "ref" : "#/components/schemas/TokenExpired"
+                  "$ref": "#/components/schemas/TokenExpired"
                   }
                 }
               }
             }
-          },
+          ,
           "403": {
             "description": "Forbidden. Shows when JWTs are valid and trying to edit another user's profile.",
             "content": {
@@ -1199,11 +1199,11 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "Request body incomplete: firstName, lastName, dob and address are required."
+                      "example": "Forbidden"
                     }
                   }
-                  }
                 }
+                
               }
             }
           },
@@ -1213,7 +1213,7 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserNotFound"
-                
+                }
               }
             }
           }
@@ -1307,3 +1307,4 @@
       }
     }
   }
+}
