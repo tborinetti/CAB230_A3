@@ -34,8 +34,18 @@ router.get("/:id", authorization, function (req, res) {
                         'movieName': role['primaryTitle'],
                         'movieID': role['tconst'],
                         'category': role['category'],
-                        'characters': JSON.parse(role['characters']),
+                        'characters': [], 
                         'imdbRating': parseFloat(role['imdbRating'])
+                    }
+                    if (role['characters'] !== ''){
+                        try {
+                            const parsed = JSON.parse(role['characters']);
+                            result['characters'] = parsed;
+                        } catch {
+                            const char = role['characters'].replaceAll(/[\w \.\-](")/g, '\\"');
+                            const parsed = JSON.parse(char);
+                            result['characters'] = parsed;
+                        }
                     }
                     jsonRoles.push(result);
                 })
@@ -52,6 +62,7 @@ router.get("/:id", authorization, function (req, res) {
         .catch((err) => {
             console.log(err);
             res.json({ "Error": true, "Message": "Error executing MySQL query" })
+            return;
         })
 });
 
